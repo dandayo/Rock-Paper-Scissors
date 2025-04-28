@@ -76,7 +76,11 @@ server.listen(port, '0.0.0.0', () => {
     console.log(`Server is listening on port ${port}`);
 });
 
-function handlePostResponse(request, response) {
+const makeSvg = () => {
+
+};
+
+const handlePostResponse = (request, response) => {
     request.setEncoding('utf8');
 
     let body = '';
@@ -89,9 +93,12 @@ function handlePostResponse(request, response) {
         const serverChoice = gameLogic.getRandomChoice();
         const result = gameLogic.determineWinner(playerChoice, serverChoice);
 
-        stats.updateStats(playerChoice, result.result);  // Add this line
+        stats.updateStats(playerChoice, result.result); 
 
-        response.writeHead(200, { 'Content-Type': 'text/plain' });
-        response.end(`You selected ${playerChoice}. ${result.message}`);
+        response.writeHead(200, { 'Content-Type': 'application/json' });
+        response.end(JSON.stringify({                        
+            message: `You selected ${playerChoice}. ${result.message}`,
+            serverChoice: serverChoice                       
+        }));
     });
 }

@@ -1,10 +1,14 @@
-const choices = ['rock', 'paper', 'scissors'];
+const choices = ['Rock', 'Paper', 'Scissors'];
 
 function getRandomChoice() {
     return choices[Math.floor(Math.random() * 3)];
 }
 
+
 function determineWinner(playerChoice, serverChoice) {
+    playerChoice = playerChoice.toLowerCase();
+    serverChoice = serverChoice.toLowerCase();
+
     if (playerChoice === serverChoice) {
         return {
             message: `Aww, we tied! I also chose ${serverChoice}.`,

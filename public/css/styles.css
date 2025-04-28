@@ -1,6 +1,28 @@
 body {
     font-family: Helvetica, sans-serif;
     text-align: center;
+    background-color: #150811;
+    color: #01BAEF;
+}
+
+.game-board {
+    display: flex;
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+.your-choice {
+    width: 50%;
+    border-right: 1px solid #01BAEF;
+}
+
+.computer-choice {
+    width: 50%;
+}
+
+
+.computer-svg  {
+    width: 60px;
 }
 
 .buttons-container {
@@ -12,21 +34,25 @@ body {
 
 .game-button {
     background: none;
-    border: 2px solid #333;
+    border: 2px solid #26081C;
     border-radius: 8px;
     padding: 10px;
     cursor: pointer;
-    transition: transform 0.2s;
-}
+    width: 80px;
+    height: 80px;   
 
-.game-button:hover {
-    transform: scale(1.1);
+    :hover {
+        transition: transform 1s;
+        transform: translate(5px, 5px) rotate(10deg);
+    } 
 }
 
 .game-icon {
-    width: 50px;
-    height: 50px;
+    text-align: center;
+    transition: transform 0.2s;
+    fill: #01BAEF;
 }
+
 
 .stats-container {
     margin-top: 30px;
@@ -44,7 +70,8 @@ body {
 }
 
 #result {
-    margin-top: 20px;
-    font-size: 1.2em;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    font-size: 1.4em;
     font-weight: bold;
 }

@@ -7,7 +7,9 @@ let gameStats = {
         rock: 0,
         paper: 0,
         scissors: 0
-    }
+    },
+    playerWins: 0,
+    computerWins: 0
 };
 
 // Load existing stats from file (if any)
@@ -23,6 +25,9 @@ function updateStats(playerChoice, result) {
     gameStats.totalGames++;
     if (result === 'win') {
         gameStats.choiceWins[playerChoice]++;
+        gameStats.playerWins++;
+    } else if (result === 'lose') {
+        gameStats.computerWins++;
     }
 
     // Save stats to file
@@ -30,7 +35,16 @@ function updateStats(playerChoice, result) {
 }
 
 function getStats() {
-    return gameStats;
+    const stats = { ...gameStats };
+    // Determine who wins more often
+    if (stats.playerWins > stats.computerWins) {
+        stats.mostFrequentWinner = 'Human';
+    } else if (stats.computerWins > stats.playerWins) {
+        stats.mostFrequentWinner = 'Computer';
+    } else {
+        stats.mostFrequentWinner = 'Tie';
+    }
+    return stats;
 }
 
 module.exports = {
