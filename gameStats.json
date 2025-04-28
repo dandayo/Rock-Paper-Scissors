@@ -1,0 +1,8 @@
+{
+  "totalGames": 51,
+  "choiceWins": {
+    "rock": 2,
+    "paper": 5,
+    "scissors": 4
+  }
+}

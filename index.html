@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Rock-Paper-Scissors</title>
+  <link rel="stylesheet" href="/public/css/styles.css">
+</head>
+<body>
+  <h1 id='title'>Welcome!</h1>
+  <h2>Test your fate with a game of Rock-Paper-Scissors!</h2>
+  <div class="buttons-container">
+    <button onclick='playGame("rock")' class="game-button">
+      <img src="/public/svg/rock.svg" alt="Rock" class="game-icon">
+    </button>
+    <button onclick='playGame("paper")' class="game-button">
+      <img src="/public/svg/paper.svg" alt="Paper" class="game-icon">
+    </button>
+    <button onclick='playGame("scissors")' class="game-button">
+      <img src="/public/svg/scissors.svg" alt="Scissors" class="game-icon">
+    </button>
+  </div>
+
+  <p id='result' hidden></p>
+
+  <h2>Game Statistics</h2>
+  <div id="gameStats">
+    <p>Total Games Played: <span id="totalGames">0</span></p>
+    <p>Most Frequent Win: <span id="mostFrequentWin">None</span></p>
+  </div>
+
+  <script>
+    const searchParams = new URLSearchParams(location.search);
+    const name = searchParams.get('name');
+
+    if (name) {
+      document.getElementById('title').innerText = `Welcome ${name}`
+    }
+
+    function playGame (option) {
+      fetch('/', { method: 'POST', body: option })
+        .then(response => response.text())
+        .then(text => {
+          const resultElement = document.getElementById('result')
+          resultElement.innerText = text
+          resultElement.hidden = false
+          updateStats();
+        })
+    }
+
+    function updateStats() {
+      fetch('/stats')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('totalGames').textContent = data.totalGames;
+          let mostWins = 0;
+          let mostFrequent = 'None';
+          for (const choice in data.choiceWins) {
+            if (data.choiceWins[choice] > mostWins) {
+              mostWins = data.choiceWins[choice];
+              mostFrequent = choice;
+            }
+          }
+          document.getElementById('mostFrequentWin').textContent = mostFrequent;
+        });
+    }
+
+    // Load initial stats
+    updateStats();
+  </script>
+</body>
+</html>
