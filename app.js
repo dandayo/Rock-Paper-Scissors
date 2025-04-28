@@ -71,8 +71,9 @@ const server = http.createServer((request, response) => {
     }
 });
 
-server.listen(4001, () => {
-    console.log(`Server is listening on port ${server.address().port}`);
+const port = process.env.PORT || 4001;
+server.listen(port, '0.0.0.0', () => {
+    console.log(`Server is listening on port ${port}`);
 });
 
 function handlePostResponse(request, response) {
