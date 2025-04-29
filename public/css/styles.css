@@ -85,12 +85,18 @@ p{
     padding: 10px;
     cursor: pointer;
     width: 100px;
-    height: 100px;  
+    height: 100px;
+    
+    
     :hover {
         transition: transform 1s;
         transform: translate(5px, 5px) rotate(10deg);
-        fill: #3ed5ff;
-    } 
+       
+    };
+
+    :active{
+        fill: #4fd9ff;
+      }
 }
 
 .game-icon {
@@ -125,4 +131,14 @@ p#result{
 
 p#gameStats {
    font-size: 15px;
+}
+
+
+
+
+@media only screen and (max-width: 800px)  {
+    .buttons-container {
+        flex-direction: column;
+        height: 400px;
+    }
 }

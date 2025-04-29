@@ -1,10 +1,10 @@
 {
-  "totalGames": 554,
+  "totalGames": 591,
   "choiceWins": {
-    "rock": 47,
-    "paper": 58,
-    "scissors": 75
+    "rock": 48,
+    "paper": 64,
+    "scissors": 78
   },
-  "playerWins": 180,
-  "computerWins": 186
+  "playerWins": 190,
+  "computerWins": 193
 }
