@@ -42,6 +42,7 @@ p{
 
 .animate-choice  {
     width: 100px;
+    height: 100px;
     height: auto;
     animation-name: computer-play;
     animation-duration: 1s;
