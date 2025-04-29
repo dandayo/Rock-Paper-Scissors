@@ -5,6 +5,9 @@
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <title>Rock-Paper-Scissors</title>
   <link rel="stylesheet" href="/public/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Joti+One&display=swap" rel="stylesheet">
 </head>
 <body>
   <h1 id='title'>Welcome!</h1>
@@ -26,15 +29,17 @@
 
     <div class="computer-choice">
       <div class="buttons-container">
-        <img class="computer-svg"/>
+        <div class="computer-button">
+          <img class="computer-svg animate-choice"/>
+        </div>
       </div>
     </div>
   </div>
 
   <p id='result' hidden></p>
 
-  <h2>Game Statistics</h2>
   <div id="gameStats">
+  <h2>Game Statistics</h2>
     <p>Total Games Played: <span id="totalGames">0</span></p>
     <p>Most Frequent Win: <span id="mostFrequentWin">None</span></p>
     <p>Most Frequent Winner: <span id="mostFrequentWinner">None</span></p>
@@ -50,8 +55,14 @@
                 resultElement.hidden = false;
 
                 const computerChoiceElement = document.querySelector('.computer-svg');
-                computerChoiceElement.src = `/public/svg/${data.serverChoice.toLowerCase()}.svg`;  //  <---  Corrected path
-                computerChoiceElement.alt = data.serverChoice.toLowerCase();
+
+                computerChoiceElement.classList.remove('animate-choice');
+
+                setTimeout(() => {
+                    computerChoiceElement.classList.add('animate-choice');
+                    computerChoiceElement.src = `/public/svg/${data.serverChoice.toLowerCase()}.svg`;
+                    computerChoiceElement.alt = data.serverChoice.toLowerCase();
+                }, 12);
 
                 updateStats();
             })
