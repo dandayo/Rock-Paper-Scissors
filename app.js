@@ -1,104 +1,82 @@
-const fs = require('fs');
-const http = require('http');
 const path = require('path');
+const express = require('express');
+const mongoose = require('mongoose');
 const gameLogic = require('./gameLogic');
-const stats = require('./stats'); // Add this line
+const { getStats, initializeStats, applySessionChanges } = require('./stats');
+require('dotenv').config();
 
-const server = http.createServer((request, response) => {
-    const url = new URL(request.url, `http://${request.headers.host}`);
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-    if (url.pathname.startsWith('/public/')) {
-        const filePath = path.join(__dirname, url.pathname);
-        const extname = path.extname(filePath);
-        let contentType = 'text/html';
+app.use(express.json());
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
-        switch (extname) {
-            case '.css':
-                contentType = 'text/css';
-                break;
-            case '.js':
-                contentType = 'text/javascript';
-                break;
-            case '.svg':
-                contentType = 'image/svg+xml';
-                break;
+// MongoDB connection
+const MONGODB_URI = process.env.MONGODB_URI;
+
+mongoose.connect(MONGODB_URI)
+  .then(async () => {
+    console.log('Connected to MongoDB');
+    await initializeStats();
+  })
+  .catch(err => {
+    console.error(' MongoDB connection error:', err);
+    process.exit(1);
+  });
+
+// Routes
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.post('/play', async (req, res) => {
+    try {
+        const playerChoice = req.body.playerChoice; 
+        
+        if (!playerChoice || !['rock', 'paper', 'scissors'].includes(playerChoice.toLowerCase())) {
+            return res.status(400).json({ message: 'Invalid player choice.' });
         }
 
-        fs.readFile(filePath, (error, content) => {
-            if (error) {
-                console.error('Error reading file:', error);
-                response.writeHead(404);
-                response.end('File not found');
-                return;
-            }
-            response.writeHead(200, { 'Content-Type': contentType });
-            response.end(content, 'utf-8');
-        });
-        return;
-    }
-
-    switch (url.pathname) {
-        case '/':
-            if (request.method === 'GET') {
-                const name = url.searchParams.get('name');
-                console.log(name);
-
-                response.writeHead(200, {
-                    'Content-type': 'text/html'
-                });
-
-                fs.createReadStream('index.html').pipe(response);
-            } else if (request.method === 'POST') {
-                handlePostResponse(request, response);
-            }
-            break;
-
-        case '/stats':  // Add this route
-            if (request.method === 'GET') {
-                const gameStats = stats.getStats();
-                response.writeHead(200, { 'Content-Type': 'application/json' });
-                response.end(JSON.stringify(gameStats), 'utf-8');
-            }
-            break;
-
-        default:
-            response.writeHead(404, {
-                'Content-type': 'text/html'
-            });
-
-            fs.createReadStream('404.html').pipe(response);
-            break;
-    }
-});
-
-const port = process.env.PORT || 4001;
-server.listen(port, '0.0.0.0', () => {
-    console.log(`Server is listening on port ${port}`);
-});
-
-const makeSvg = () => {
-
-};
-
-const handlePostResponse = (request, response) => {
-    request.setEncoding('utf8');
-
-    let body = '';
-    request.on('data', function(chunk) {
-        body += chunk;
-    });
-
-    request.on('end', function() {
-        const playerChoice = body;
         const serverChoice = gameLogic.getRandomChoice();
         const result = gameLogic.determineWinner(playerChoice, serverChoice);
 
-        stats.updateStats(playerChoice, result.result); 
+        // Update stats
+        const sessionStats = {
+            totalGames: 1,
+            playerWins: result.result === 'win' ? 1 : 0,
+            computerWins: result.result === 'lose' ? 1 : 0,
+            choiceWins: {
+                [playerChoice]: result.result === 'win' ? 1 : 0
+            }
+        };
+        
+        await applySessionChanges(sessionStats);
 
-        response.writeHead(200, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify({                        
+        res.json({
             message: `You selected ${playerChoice}. ${result.message}`,
-            serverChoice: serverChoice                       
-        }));
-    });
-}
+            serverChoice: serverChoice,
+            gameResult: result.result 
+        });
+    } catch (error) {
+        console.error('Error processing game:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.get('/stats', async (req, res) => {
+    try {
+        const stats = await getStats();
+        res.json(stats);
+    } catch (error) {
+        console.error('Error getting stats:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, '404.html'));
+});
+
+app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+});

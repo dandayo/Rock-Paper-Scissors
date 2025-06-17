@@ -1,53 +1,89 @@
-const fs = require('fs');
-const STATS_FILE = 'gameStats.json';
+const GameStats = require('./models/Stats');
 
-let gameStats = {
-    totalGames: 0,
-    choiceWins: {
-        rock: 0,
-        paper: 0,
-        scissors: 0
-    },
-    playerWins: 0,
-    computerWins: 0
-};
+let gameStatsSingleton = null; // Will store the single instance of stats loaded from DB
 
-// Load existing stats from file (if any)
-try {
-    const data = fs.readFileSync(STATS_FILE, 'utf8');
-    gameStats = JSON.parse(data);
-} catch (err) {
-    // If the file doesn't exist or is invalid, use the default stats
-    console.log('No existing stats file found, or file is invalid. Using default stats.');
-}
+// Async function to initialize stats
+async function initializeStats() {
+  try {
+    let stats = await GameStats.findOne();
 
-function updateStats(playerChoice, result) {
-    gameStats.totalGames++;
-    if (result === 'win') {
-        gameStats.choiceWins[playerChoice]++;
-        gameStats.playerWins++;
-    } else if (result === 'lose') {
-        gameStats.computerWins++;
-    }
-
-    // Save stats to file
-    fs.writeFileSync(STATS_FILE, JSON.stringify(gameStats, null, 2), 'utf8');
-}
-
-function getStats() {
-    const stats = { ...gameStats };
-    // Determine who wins more often
-    if (stats.playerWins > stats.computerWins) {
-        stats.mostFrequentWinner = 'Human';
-    } else if (stats.computerWins > stats.playerWins) {
-        stats.mostFrequentWinner = 'Computer';
+    if (!stats) {
+      stats = new GameStats(); // Use default values from schema
+      await stats.save();
+      console.log('📊 Initial game stats created in MongoDB.');
     } else {
-        stats.mostFrequentWinner = 'Tie';
+      console.log('📊 Existing game stats loaded from MongoDB.');
     }
+    gameStatsSingleton = stats; // Save loaded/created stats to singleton
     return stats;
+  } catch (error) {
+    console.error('❌ Error initializing game stats from MongoDB:', error);
+    // In case of error, return default values for local work,
+    // but in production this needs stricter handling
+    const defaultStats = new GameStats();
+    gameStatsSingleton = defaultStats;
+    return defaultStats;
+  }
+}
+
+// Applies session changes to main stats in DB
+async function applySessionChanges(sessionStatsChanges) {
+    if (!gameStatsSingleton) {
+        gameStatsSingleton = await initializeStats(); // Ensure stats are loaded
+    }
+
+    // Apply changes to current singleton
+    gameStatsSingleton.totalGames += sessionStatsChanges.totalGames || 0;
+    gameStatsSingleton.playerWins += sessionStatsChanges.playerWins || 0;
+    gameStatsSingleton.computerWins += sessionStatsChanges.computerWins || 0;
+
+    // Update choiceWins
+    if (sessionStatsChanges.choiceWins) {
+        for (const choice in sessionStatsChanges.choiceWins) {
+          if (!(choice in gameStatsSingleton.choiceWins)) {
+            gameStatsSingleton.choiceWins[choice] = 0;
+          }
+            gameStatsSingleton.choiceWins[choice] += sessionStatsChanges.choiceWins[choice] || 0;
+        }
+    }
+
+    gameStatsSingleton.lastUpdated = Date.now(); // Update last modified time
+
+    try {
+        await gameStatsSingleton.save(); // Save updated stats to DB
+        console.log('Session game stats applied and saved to MongoDB.');
+    } catch (error) {
+        console.error('Error applying and saving session stats to MongoDB:', error);
+    }
+}
+
+// Function to get stats (always gets current from singleton)
+async function getStats() {
+  if (!gameStatsSingleton) {
+    gameStatsSingleton = await initializeStats();
+  }
+
+  // Make a copy to avoid modifying original object
+  const statsData = {
+    totalGames: Number(gameStatsSingleton.totalGames),
+    choiceWins: { ...gameStatsSingleton.choiceWins },
+    playerWins: Number(gameStatsSingleton.playerWins),
+    computerWins: Number(gameStatsSingleton.computerWins)
+  };
+
+  // Add logic to determine most frequent winner
+  if (statsData.playerWins > statsData.computerWins) {
+    statsData.mostFrequentWinner = 'Human';
+  } else if (statsData.computerWins > statsData.playerWins) {
+    statsData.mostFrequentWinner = 'Computer';
+  } else {
+    statsData.mostFrequentWinner = 'Tie';
+  }
+  return statsData;
 }
 
 module.exports = {
-    updateStats,
-    getStats
+  getStats,
+  initializeStats,
+  applySessionChanges 
 };

@@ -3,18 +3,34 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "nodemon": "^3.0.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.4"
   },
   "engines": {
-    "node": "18.x" 
+    "node": "22.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dandayo/Rock-Paper-Scissors.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dandayo/Rock-Paper-Scissors/issues"
+  },
+  "homepage": "https://github.com/dandayo/Rock-Paper-Scissors#readme",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mongodb": "^6.17.0",
+    "mongoose": "^8.16.0"
   }
 }

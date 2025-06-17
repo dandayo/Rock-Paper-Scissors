@@ -45,54 +45,6 @@
     <p>Most Frequent Winner: <span id="mostFrequentWinner">None</span></p>
   </div>
 
-  <script>
-    const playGame = (option) => {
-        fetch('/', { method: 'POST', body: option })
-            .then(response => response.json())  
-            .then(data => {
-                const resultElement = document.getElementById('result');
-                resultElement.innerText = data.message;
-                resultElement.hidden = false;
-
-                const computerChoiceElement = document.querySelector('.computer-svg');
-
-                computerChoiceElement.classList.remove('animate-choice');
-
-                setTimeout(() => {
-                    computerChoiceElement.classList.add('animate-choice');
-                    computerChoiceElement.src = `/public/svg/${data.serverChoice.toLowerCase()}.svg`;
-                    computerChoiceElement.alt = data.serverChoice.toLowerCase();
-                }, 10);
-
-                updateStats();
-            })
-    }
-
-    const capitalizeFirstLetter = (string) => {
-      if (!string) return string; 
-      return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    function updateStats() {
-      fetch('/stats')
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('totalGames').textContent = data.totalGames;
-          let mostWins = 0;
-          let mostFrequent = 'None';
-          for (const choice in data.choiceWins) {
-            if (data.choiceWins[choice] > mostWins) {
-              mostWins = data.choiceWins[choice];
-              mostFrequent = choice;
-            }
-          }
-          document.getElementById('mostFrequentWin').textContent = capitalizeFirstLetter(mostFrequent);
-          document.getElementById('mostFrequentWinner').textContent = data.mostFrequentWinner;
-        });
-    }
-
-    // Load initial stats
-    updateStats();
-  </script>
+  <script src="/public/script/script.js"></script>
 </body>
 </html>
